@@ -183,7 +183,7 @@ class SepoliaFaucetBot:
             }
             
             signed_txn = self.w3.eth.account.sign_transaction(transaction, from_private_key)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
             
             print(f"💸 Transfer initiated! TX Hash: {tx_hash.hex()}")
             print(f"💰 Sent {send_amount_eth:.18f} ETH to {to_address}")

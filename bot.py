@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Sepolia ETH Auto Faucet Bot
-Educational script for automated faucet requests and fund transfers using Tor for unique IP per request
-"""
-
 import os
 import time
 import random
@@ -17,12 +12,10 @@ from stem.control import Controller
 
 class SepoliaFaucetBot:
     def __init__(self):
-        # Sepolia testnet RPC URL
         self.rpc_url = "https://eth-sepolia.public.blastapi.io"
         self.faucet_url = "https://faucet.chainplatform.co/api/ethereum-sepolia/faucet"
-        self.request_delay = 1  # Delay between requests in seconds
+        self.request_delay = 1
         
-        # Tor proxy settings
         self.tor_proxy = {
             'http': 'socks5h://localhost:9050',
             'https': 'socks5h://localhost:9050'
@@ -30,7 +23,6 @@ class SepoliaFaucetBot:
         
         self.w3 = Web3(Web3.HTTPProvider(self.rpc_url))
         
-        # Check connection
         if not self.w3.is_connected():
             print("❌ Failed to connect to Sepolia network")
             exit(1)
@@ -65,7 +57,6 @@ class SepoliaFaucetBot:
                     controller.authenticate()
                     controller.signal(Signal.NEWNYM)
                     print(f"🔄 Changed to new Tor identity (unique IP) on attempt {attempt + 1}")
-                    # Wait for the new circuit to establish
                     time.sleep(3)
                     return True
             except Exception as e:
@@ -79,7 +70,6 @@ class SepoliaFaucetBot:
     def request_faucet_funds(self, address):
         """Request funds from the faucet API through Tor with a unique IP"""
         try:
-            # Ensure a new Tor identity (unique IP) before each request
             print(f"🔄 Preparing new IP for faucet request to {address}...")
             if not self.change_tor_identity():
                 print("⚠️ Proceeding with faucet request despite Tor identity change failure")
@@ -88,7 +78,7 @@ class SepoliaFaucetBot:
             
             payload = {
                 'walletAddress': address,
-                'turnstileToken': ''  # Empty turnstile token
+                'turnstileToken': ''
             }
             
             headers = {
@@ -223,7 +213,6 @@ class SepoliaFaucetBot:
             if current_balance > initial_balance:
                 print(f"✅ Funds received! Balance: {current_balance} ETH")
                 
-                # Retry transfer until confirmed
                 retry_count = 0
                 while True:
                     retry_count += 1
@@ -234,7 +223,6 @@ class SepoliaFaucetBot:
                     else:
                         print(f"❌ Transfer failed - retrying in {self.request_delay} seconds...")
                         time.sleep(self.request_delay)
-                        # Check if funds are still available before retrying
                         if self.get_balance(temp_address) <= initial_balance:
                             print("❌ Funds no longer available - stopping retries")
                             return False
@@ -274,7 +262,6 @@ class SepoliaFaucetBot:
                 initial_balance = self.get_balance(temp_address)
                 print(f"💰 Initial balance: {initial_balance} ETH")
                 
-                # Retry loop for ACCESS_RESTRICTED, timeout, or connection reset
                 while True:
                     success, response_content = self.request_faucet_funds(temp_address)
                     if success:
@@ -288,7 +275,6 @@ class SepoliaFaucetBot:
                             time.sleep(2)
                             continue
                     else:
-                        # Check for MAX_RETRIES_EXCEEDED, TRANSACTION_REPLACED, REPLACEMENT_UNDERPRICED, RATE_LIMIT, ACCESS_RESTRICTED, TEMPORARILY_FORBIDDEN, timeout, or connection reset
                         if b"MAX_RETRIES_EXCEEDED" in response_content:
                             print(f"⚠️ Max retries exceeded with url detected - reusing address in next cycle")
                             reuse = True

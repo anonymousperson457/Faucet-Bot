@@ -155,7 +155,7 @@ class SepoliaFaucetBot:
         return False
     
     def transfer_funds(self, from_private_key, from_address, to_address, amount_eth):
-    """Transfer the full amount (minus gas fees) from one address to another"""
+        """Transfer the full amount (minus gas fees) from one address to another"""
     try:
         nonce = self.w3.eth.get_transaction_count(from_address)
         gas_price = self.w3.eth.gas_price

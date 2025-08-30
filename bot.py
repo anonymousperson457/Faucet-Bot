@@ -156,51 +156,51 @@ class SepoliaFaucetBot:
     
     def transfer_funds(self, from_private_key, from_address, to_address, amount_eth):
         """Transfer the full amount (minus gas fees) from one address to another"""
-    try:
-        nonce = self.w3.eth.get_transaction_count(from_address)
-        gas_price = self.w3.eth.gas_price
-        gas_limit = 21000
-        
-        gas_cost_wei = gas_limit * gas_price
-        gas_cost_eth = self.w3.from_wei(gas_cost_wei, 'ether')
-        
-        balance_wei = self.w3.eth.get_balance(from_address)
-        balance_eth = self.w3.from_wei(balance_wei, 'ether')
-        
-        send_amount_wei = balance_wei - gas_cost_wei
-        send_amount_eth = self.w3.from_wei(send_amount_wei, 'ether')
-        
-        if send_amount_wei <= 0:
-            print(f"❌ Insufficient funds for transfer. Balance: {balance_eth:.18f} ETH, Gas cost: {gas_cost_eth:.18f} ETH")
-            return False
-        
-        transaction = {
-            'nonce': nonce,
-            'to': to_address,
-            'value': send_amount_wei,
-            'gas': gas_limit,
-            'gasPrice': gas_price,
-        }
-        
-        signed_txn = self.w3.eth.account.sign_transaction(transaction, from_private_key)
-        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)  # Changed from raw_transaction to rawTransaction
-        
-        print(f"💸 Transfer initiated! TX Hash: {tx_hash.hex()}")
-        print(f"💰 Sent {send_amount_eth:.18f} ETH to {to_address}")
-        
-        print("⏳ Waiting for 1 block confirmation...")
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
-        
-        if tx_receipt.status == 1:
-            print(f"✅ Transfer confirmed! Block: {tx_receipt.blockNumber}")
-            return True
-        else:
-            print("❌ Transfer failed!")
-            return False
+        try:
+            nonce = self.w3.eth.get_transaction_count(from_address)
+            gas_price = self.w3.eth.gas_price
+            gas_limit = 21000
+            
+            gas_cost_wei = gas_limit * gas_price
+            gas_cost_eth = self.w3.from_wei(gas_cost_wei, 'ether')
+            
+            balance_wei = self.w3.eth.get_balance(from_address)
+            balance_eth = self.w3.from_wei(balance_wei, 'ether')
+            
+            send_amount_wei = balance_wei - gas_cost_wei
+            send_amount_eth = self.w3.from_wei(send_amount_wei, 'ether')
+            
+            if send_amount_wei <= 0:
+                print(f"❌ Insufficient funds for transfer. Balance: {balance_eth:.18f} ETH, Gas cost: {gas_cost_eth:.18f} ETH")
+                return False
+            
+            transaction = {
+                'nonce': nonce,
+                'to': to_address,
+                'value': send_amount_wei,
+                'gas': gas_limit,
+                'gasPrice': gas_price,
+            }
+            
+            signed_txn = self.w3.eth.account.sign_transaction(transaction, from_private_key)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            
+            print(f"💸 Transfer initiated! TX Hash: {tx_hash.hex()}")
+            print(f"💰 Sent {send_amount_eth:.18f} ETH to {to_address}")
+            
+            print("⏳ Waiting for 1 block confirmation...")
+            tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+            
+            if tx_receipt.status == 1:
+                print(f"✅ Transfer confirmed! Block: {tx_receipt.blockNumber}")
+                return True
+            else:
+                print("❌ Transfer failed!")
+                return False
                 
-    except Exception as e:
-        print(f"❌ Error transferring funds: {e}")
-        return False
+        except Exception as e:
+            print(f"❌ Error transferring funds: {e}")
+            return False
     
     def wait_for_funds_and_transfer(self, temp_private_key, temp_address, recipient_address, initial_balance, timeout=300):
         """Wait for funds to arrive and immediately transfer them with retries"""
